@@ -1,15 +1,30 @@
-Composer Library Template
+Simple Google Maps Distance Calculator
 =========================
 
-If you are trying to create a new PHP Composer library, whether it will be going to submitted to packagist.org or just in your Github account, this template of files will surely help you make the process a lot easier and faster.
+Allows you to return distance and duration between 2 long/lat positions
 
-Features
+Usage
 --------
 
-* PSR-4 autoloading compliant structure
-* Unit-Testing with PHPUnit
-* Comprehensive Guides and tutorial
-* Easy to use to any framework or even a plain php file
+```php
 
+use OwenMelbz\GoogleMapDistanceCalculator\DistanceCalculator;
 
-I encourage that you put more information on this readme file instead of leaving it as is. See [How to make a README file](http://www.darwinbiler.com/designing-and-making-the-readme-file-for-your-github-repository/) for more info.
+$maps = new DistanceCalculator($apiKey = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXx');
+
+$maps->setStartingPoint(52.629129, 1.290570);
+$maps->setEndPoint(52.623990, 1.304594);
+
+$maps->setTravelMode('walking'); // default 'driving'
+$maps->setFormat('xml'); // default 'json'
+$maps->setUnit('metric'); // default 'imperial'
+
+$maps->getDistance();
+$maps->getDistanceInMeters();
+
+$maps->getTravelDuration();
+$maps->getTravelDurationInSeconds();
+
+$maps->calculate(); // returns whole response from google
+
+```
