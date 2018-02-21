@@ -1,15 +1,15 @@
 {
     "name": "owenmelbz/google-map-distance-calculator",
-    "description": "Boilerplate package for creating other packages.",
-    "keywords": ["template", "composer", "package"],
-    "license": "DBAD",
+    "description": "Simple class for basic google maps distance calculations.",
+    "keywords": ["google", "maps", "distance"],
+    "license": "MIT",
     "authors": [
         {
             "name": "Owen Melbourne",
             "email": "owenmelbz@gmail.com"
         }
     ],
-    "type": "project",
+    "type": "package",
     "require": {
 		"php": ">=7"
     },
