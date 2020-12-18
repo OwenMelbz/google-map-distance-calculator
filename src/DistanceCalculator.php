@@ -137,8 +137,8 @@ class DistanceCalculator
     private function makeRequest() : object
     {
         $data = [
-            'origins' => implode($this->getStartingPoint(), ','),
-            'destinations' => implode($this->getEndPoint(), ','),
+            'origins' => implode(',', $this->getStartingPoint()),
+            'destinations' => implode(',', $this->getEndPoint()),
             'units' => $this->getUnit(),
             'userIp' => $this->getUserIp(),
             'key' => $this->apiKey
