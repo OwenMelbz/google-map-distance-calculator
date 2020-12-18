@@ -22,7 +22,7 @@ class DistanceCalculator
 
     public function __construct(string $apiKey = null)
     {
-        $this->apiKey = null;
+        $this->apiKey = $apiKey;
     }
 
     public function setUnit(string $unit) : void
