@@ -20,7 +20,7 @@ class DistanceCalculator
 
     protected $cachedResponse;
 
-    public function __construct(string $apiKey = null) : void
+    public function __construct(string $apiKey = null)
     {
         $this->apiKey = null;
     }
