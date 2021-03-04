@@ -25,9 +25,11 @@ class DistanceCalculator
         $this->apiKey = $apiKey;
     }
 
-    public function setUnit(string $unit) : void
+    public function setUnit(string $unit)
     {
         $this->unit = $unit;
+
+        return $this;
     }
 
     public function getUnit() : string
@@ -35,9 +37,11 @@ class DistanceCalculator
         return $this->unit;
     }
 
-    public function setFormat($format) : void
+    public function setFormat($format)
     {
         $this->format = $format;
+
+        return $this;
     }
 
     public function getFormat() : string
@@ -45,12 +49,14 @@ class DistanceCalculator
         return $this->format;
     }
 
-    public function setStartingPoint(float $lat, float $lon) : void
+    public function setStartingPoint(float $lat, float $lon)
     {
         $this->startLocation = [
             'lat' => $lat,
             'lon' => $lon
         ];
+
+        return $this;
     }
 
     public function getStartingPoint() : array
@@ -58,12 +64,21 @@ class DistanceCalculator
         return $this->startLocation;
     }
 
-    public function setEndPoint(float $lat, float $lon) : void
+    public function setEndPoint(float $lat, float $lon)
     {
         $this->endLocation = [
             'lat' => $lat,
             'lon' => $lon
         ];
+
+        return $this;
+    }
+
+    public function setEndPoints(array $points)
+    {
+        $this->endLocation = $points;
+
+        return $this;
     }
 
     public function getEndPoint() : array
@@ -71,53 +86,64 @@ class DistanceCalculator
         return $this->endLocation;
     }
 
-    public function setModeOfTransport(string $mode) : void
+    public function setModeOfTransport(string $mode)
     {
         $this->modeOfTransport = $mode;
+
+        return $this;
     }
 
-    public function getDistance() : string
+    public function getDistance($key = 0) : string
     {
         if (!$this->cachedResponse) {
             $this->calculate();
         }
 
-        $distance = $this->cachedResponse->rows[0]->elements[0]->distance->text ?? '';
+        $distance = $this->cachedResponse->rows[0]->elements[$key]->distance->text ?? '';
 
         return $distance;
     }
 
-    public function getDistanceInMeters() : float
+    public function getDistanceInMeters($key = 0) : float
     {
         if (!$this->cachedResponse) {
             $this->calculate();
         }
 
-        $distance = $this->cachedResponse->rows[0]->elements[0]->distance->value ?? 0;
+        $distance = $this->cachedResponse->rows[0]->elements[$key]->distance->value ?? 0;
 
         return (float) $distance;
     }
 
-    public function getTravelDuration() : string
+    public function getTravelDuration($key = 0) : string
     {
         if (!$this->cachedResponse) {
             $this->calculate();
         }
 
-        $duration = $this->cachedResponse->rows[0]->elements[0]->duration->text ?? '';
+        $duration = $this->cachedResponse->rows[0]->elements[$key]->duration->text ?? '';
 
         return $duration;
     }
 
-    public function getTravelDurationInSeconds() : float
+    public function getTravelDurationInSeconds($key = 0) : float
     {
         if (!$this->cachedResponse) {
             $this->calculate();
         }
 
-        $duration = $this->cachedResponse->rows[0]->elements[0]->duration->value ?? 0;
+        $duration = $this->cachedResponse->rows[0]->elements[$key]->duration->value ?? 0;
 
-        return (float)$duration;
+        return (float) $duration;
+    }
+
+    public function getStatus($key = 0) : string
+    {
+        if (!$this->cachedResponse) {
+            $this->calculate();
+        }
+
+        return $this->cachedResponse->rows[0]->elements[$key]->status ?? 'UNKNOWN';
     }
 
     public function calculate() : object
@@ -129,6 +155,31 @@ class DistanceCalculator
         return $this->cachedResponse;
     }
 
+    public function toArray()
+    {
+        if (!$this->cachedResponse) {
+            $this->calculate();
+        }
+        
+        $results = [];
+
+        foreach ($this->cachedResponse->rows[0]->elements as $key => $unused) {
+            $results[$key] = (object) [
+                'distance' => $this->getDistance($key),
+                'distance_meters' => $this->getDistanceInMeters($key),
+                'duration' => $this->getTravelDuration($key),
+                'duration_seconds' => $this->getTravelDurationInSeconds($key),
+                'status' => $this->getStatus($key),
+            ];
+        }
+
+        if (count($results) <= 1) {
+            return current($results);
+        }
+
+        return $results;
+    }
+
     protected function apiUrl() : string
     {
         return 'https://maps.googleapis.com/maps/api/distancematrix/';
@@ -136,9 +187,19 @@ class DistanceCalculator
 
     private function makeRequest() : object
     {
+        if (is_array(current($endpoints = $this->getEndPoint()))) {
+            $points = array_map(function ($endpoint) {
+                return implode(',', $endpoint);
+            }, $endpoints);
+
+            $desinations = implode('|', $points);
+        } else {
+            $desinations = implode(',', $this->getEndPoint());
+        }
+
         $data = [
             'origins' => implode(',', $this->getStartingPoint()),
-            'destinations' => implode(',', $this->getEndPoint()),
+            'destinations' => $desinations,
             'units' => $this->getUnit(),
             'userIp' => $this->getUserIp(),
             'key' => $this->apiKey
